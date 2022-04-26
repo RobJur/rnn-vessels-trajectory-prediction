@@ -230,6 +230,34 @@ def inverse_pol_to_coordinates(x, y_pred):
     prediction = prediction.reshape(len(prediction)//seq_output_length,seq_output_length,2)
     return prediction
 
+def inverse_utm_to_coordinates(X_val, y_pred):
+    X_val = transform_and_scale(X_val)
+    lat = X_val[:,seq_input_length-1,0]
+    long = X_val[:,seq_input_length-1,1]
+    
+    y_pred = y_pred.reshape(len(y_pred)*seq_output_length, 2)
+    y_pred = scaler_utm.inverse_transform(y_pred)
+    y_pred = y_pred.reshape(len(y_pred)//seq_output_length,seq_output_length, 2)
+    
+    prediction = list()
+    
+    for j in range(len(X_val)):
+        temp_lat = lat[j]
+        temp_long = long[j]
+        for i in range(seq_output_length):
+            utm_x, utm_y = p(temp_lat, temp_long, inverse=False)
+            temp_x = utm_x + y_pred[j,i,0]
+            temp_y = utm_y + y_pred[j,i,1]
+            
+            endLat, endLon = p(temp_x, temp_y, inverse=True)
+            prediction.append([endLat, endLon])
+            temp_lat = endLat
+            temp_long = endLon
+    prediction = np.array(prediction)
+    prediction = prediction.reshape(len(prediction)//seq_output_length,seq_output_length,2)
+    
+    return prediction
+
 def plt_dynamic_training(x, vy, ty, ax, title, colors=['b']):
     ax.plot(x, vy, 'r', label="Validation Loss")
     ax.plot(x, ty, 'b', label="Train Loss")
@@ -281,11 +309,7 @@ for lstm_layer_size in lstm_cells:
         
         """FOR UTM"""
         # EXP-D
-        """yhat = yhat.reshape(len(yhat), seq_output_length, 2)      
-        yhat = transform_and_scale_utm(yhat)
-        yhat = p(yhat[:,:,0], yhat[:,:,1], inverse=True)
-        yhat = np.array(yhat)
-        yhat = np.stack([yhat[1],yhat[0]], axis=2)"""
+        """yhat = inverse_utm_to_coordinates(X_test,yhat)"""
 
         error, dist = ext.true_and_predicted_distance(ext, ytrue, yhat, 'k')
         score += error
