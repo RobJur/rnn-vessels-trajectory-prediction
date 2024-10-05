@@ -9,3 +9,5 @@ This repository contains code used in the scientific research: [DOI: 10.1016/j.e
 ### *** 2023-2024
 
 Code snippets related to the detection of prediction boundaries are in the file: `4_prediction_boundaries.py`.
+
+collision_219021240_232018267.csv - The csv file contains data from the AIS system just before the accident between the cargo ships Scot Carrier and Karin Hoej that occurred on 13 December 2021.
